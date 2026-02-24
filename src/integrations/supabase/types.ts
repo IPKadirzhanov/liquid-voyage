@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      contact_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          name: string
+          phone: string
+          source: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          phone: string
+          source?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
+      tours: {
+        Row: {
+          created_at: string | null
+          dates: string
+          description: string | null
+          destination: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          location: string
+          price: string
+          rating: number | null
+          tag: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dates: string
+          description?: string | null
+          destination?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location: string
+          price: string
+          rating?: number | null
+          tag?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dates?: string
+          description?: string | null
+          destination?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          location?: string
+          price?: string
+          rating?: number | null
+          tag?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
