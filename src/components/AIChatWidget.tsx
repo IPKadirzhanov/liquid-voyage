@@ -7,50 +7,97 @@ interface Message {
   content: string;
 }
 
-const initialMessages: Message[] = [
-  {
-    role: "assistant",
-    content: "Здравствуйте! 👋 Я AI-помощник TravelLux. Помогу подобрать идеальный тур. Куда хотите поехать?",
-  },
-];
-
-const botResponses = [
-  "Отличный выбор! Какой у вас бюджет на поездку?",
-  "Когда планируете поехать? Подберу лучшие варианты по датам.",
-  "У нас как раз есть горящие предложения по этому направлению! Хотите узнать подробнее?",
-  "Передам вашу заявку менеджеру. Он свяжется с вами в WhatsApp в ближайшие 5 минут! 🎉",
-];
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/travel-chat`;
 
 const AIChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", content: "Здравствуйте! 👋 Я AI-помощник TravelLux. Помогу подобрать идеальный тур из Алматы. Куда хотите поехать?" },
+  ]);
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
-  const responseIndex = useRef(0);
 
   useEffect(() => {
     messagesRef.current?.scrollTo({ top: messagesRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const userMsg: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMsg]);
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    const userMsg: Message = { role: "user", content: input.trim() };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setInput("");
-    setIsTyping(true);
+    setIsLoading(true);
 
-    setTimeout(() => {
-      const resp = botResponses[responseIndex.current % botResponses.length];
-      responseIndex.current++;
-      setMessages((prev) => [...prev, { role: "assistant", content: resp }]);
-      setIsTyping(false);
-    }, 1200);
+    let assistantContent = "";
+
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || "Ошибка сервера");
+      }
+
+      if (!resp.body) throw new Error("No stream");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let newlineIdx: number;
+        while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIdx);
+          buffer = buffer.slice(newlineIdx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && prev.length > newMessages.length) {
+                  return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+                }
+                return [...prev.slice(0, newMessages.length), { role: "assistant", content: assistantContent }];
+              });
+            }
+          } catch {
+            buffer = line + "\n" + buffer;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Chat error:", e);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Извините, произошла ошибка. Попробуйте ещё раз или напишите нам в WhatsApp: +7 700 123 45 67" },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
-      {/* Floating button */}
       <motion.button
         onClick={() => setIsOpen(true)}
         className={`fixed bottom-6 right-6 z-50 rounded-full p-4 btn-primary-glow shadow-2xl ${isOpen ? "hidden" : ""}`}
@@ -62,7 +109,6 @@ const AIChatWidget = () => {
         <MessageCircle className="h-6 w-6" />
       </motion.button>
 
-      {/* Chat window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -72,7 +118,6 @@ const AIChatWidget = () => {
             transition={{ type: "spring", bounce: 0.2 }}
             className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-3rem)] rounded-3xl glass-strong overflow-hidden shadow-2xl"
           >
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/30">
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -91,14 +136,12 @@ const AIChatWidget = () => {
               </button>
             </div>
 
-            {/* Messages */}
             <div ref={messagesRef} className="h-80 overflow-y-auto p-4 space-y-3">
               {messages.map((msg, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 }}
                   className={`flex gap-2 ${msg.role === "user" ? "flex-row-reverse" : ""}`}
                 >
                   <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center ${msg.role === "assistant" ? "bg-primary/15" : "bg-secondary/30"}`}>
@@ -109,7 +152,7 @@ const AIChatWidget = () => {
                   </div>
                 </motion.div>
               ))}
-              {isTyping && (
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2">
                   <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
                     <Bot size={14} className="text-primary" />
@@ -130,23 +173,21 @@ const AIChatWidget = () => {
               )}
             </div>
 
-            {/* Input */}
             <div className="p-4 border-t border-border/30">
-              <form
-                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                className="flex gap-2"
-              >
+              <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Напишите сообщение..."
                   className="flex-1 bg-muted/50 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ring-primary/20 transition-all text-foreground placeholder:text-muted-foreground"
+                  disabled={isLoading}
                 />
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.9 }}
                   type="submit"
-                  className="btn-primary-glow !p-2.5 !rounded-xl"
+                  disabled={isLoading}
+                  className="btn-primary-glow !p-2.5 !rounded-xl disabled:opacity-50"
                 >
                   <Send size={16} />
                 </motion.button>
