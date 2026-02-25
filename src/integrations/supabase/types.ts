@@ -64,10 +64,13 @@ export type Database = {
           destination: string | null
           id: string
           image_url: string | null
-          is_active: boolean | null
           location: string
           price: string
           rating: number | null
+          seo_description: string | null
+          seo_title: string | null
+          slug: string | null
+          status: string
           tag: string | null
           title: string
           updated_at: string | null
@@ -79,10 +82,13 @@ export type Database = {
           destination?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean | null
           location: string
           price: string
           rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          status?: string
           tag?: string | null
           title: string
           updated_at?: string | null
@@ -94,10 +100,13 @@ export type Database = {
           destination?: string | null
           id?: string
           image_url?: string | null
-          is_active?: boolean | null
           location?: string
           price?: string
           rating?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          status?: string
           tag?: string | null
           title?: string
           updated_at?: string | null

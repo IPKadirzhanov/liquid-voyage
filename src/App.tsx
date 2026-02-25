@@ -12,6 +12,8 @@ import TurkeyFromAlmaty from "./pages/TurkeyFromAlmaty";
 import DubaiTours from "./pages/DubaiTours";
 import HotTours from "./pages/HotTours";
 import SharmElSheikh from "./pages/SharmElSheikh";
+import Admin from "./pages/Admin";
+import TourPage from "./pages/TourPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
             <Route path="/dubai-tours" element={<DubaiTours />} />
             <Route path="/hot-tours" element={<HotTours />} />
             <Route path="/sharm-el-sheikh" element={<SharmElSheikh />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/tour/:slug" element={<TourPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>

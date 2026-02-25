@@ -24,7 +24,7 @@ const Navbar = () => {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50"
     >
-      <nav className="glass-strong mx-4 mt-4 rounded-2xl px-6 py-3">
+      <nav className="liquid-glass mx-4 mt-4 rounded-2xl px-6 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <motion.div whileHover={{ rotate: 15 }} transition={{ type: "spring" }}>
@@ -46,27 +46,42 @@ const Navbar = () => {
                 }`}
               >
                 {location.pathname === link.to && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-0 rounded-xl bg-primary/10"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                  />
+                  <>
+                    <motion.div
+                      layoutId="nav-indicator"
+                      className="absolute inset-0 rounded-xl bg-primary/10"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                    />
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-primary"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                    />
+                  </>
                 )}
                 <span className="relative z-10">{link.label}</span>
               </Link>
             ))}
           </div>
 
-          <motion.a
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            href="https://wa.me/77001234567"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:block btn-primary-glow text-sm !py-2 !px-5"
-          >
-            WhatsApp
-          </motion.a>
+          <div className="hidden md:flex items-center gap-2">
+            <Link
+              to="/admin"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted/50"
+            >
+              Админ
+            </Link>
+            <motion.a
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              href="https://wa.me/77001234567"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary-glow text-sm !py-2 !px-5"
+            >
+              WhatsApp
+            </motion.a>
+          </div>
 
           {/* Mobile toggle */}
           <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
@@ -105,6 +120,15 @@ const Navbar = () => {
                     </Link>
                   </motion.div>
                 ))}
+                <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+                  <Link
+                    to="/admin"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground"
+                  >
+                    Админ-панель
+                  </Link>
+                </motion.div>
               </div>
             </motion.div>
           )}
