@@ -1,1 +1,7 @@
 project_id = "pyrjfcpluxwulpdhhvaf"
+
+[functions.travel-chat]
+verify_jwt = false
+
+[functions.import-tour]
+verify_jwt = false
