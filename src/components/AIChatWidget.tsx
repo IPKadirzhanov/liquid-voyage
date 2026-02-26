@@ -185,7 +185,7 @@ const AIChatWidget = () => {
                     {msg.role === "assistant" ? <Bot size={14} className="text-primary" /> : <User size={14} className="text-secondary-foreground" />}
                   </div>
                   <div className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] ${msg.role === "assistant" ? "glass text-foreground" : "bg-primary text-primary-foreground"}`}>
-                    {msg.content}
+                    {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
                   </div>
                 </motion.div>
               ))}
