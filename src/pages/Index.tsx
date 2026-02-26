@@ -196,7 +196,7 @@ const Index = () => {
                 <motion.a
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  href="https://wa.me/77001234567"
+                  href="https://wa.me/77479481318"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block btn-primary-glow"
