@@ -126,7 +126,7 @@ const AIChatWidget = () => {
       console.error("Chat error:", e);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Извините, произошла ошибка. Попробуйте ещё раз или напишите нам в WhatsApp: +7 700 123 45 67" },
+        { role: "assistant", content: "Извините, произошла ошибка. Попробуйте ещё раз или напишите нам в WhatsApp: +7 747 948 13 18" },
       ]);
     } finally {
       setIsLoading(false);
