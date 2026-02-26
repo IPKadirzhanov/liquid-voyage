@@ -7,6 +7,43 @@ interface Message {
   content: string;
 }
 
+const renderMarkdown = (text: string) => {
+  const parts: React.ReactNode[] = [];
+  // Split by markdown links and bold
+  const regex = /(\*\*(.+?)\*\*|\[([^\]]+)\]\(([^)]+)\))/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    if (match[2]) {
+      // Bold text
+      parts.push(<strong key={key++} className="font-bold">{match[2]}</strong>);
+    } else if (match[3] && match[4]) {
+      // Link as button
+      parts.push(
+        <a
+          key={key++}
+          href={match[4]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 mt-2 px-4 py-2 rounded-xl text-xs font-semibold text-primary-foreground btn-primary-glow !py-2 !px-4 no-underline"
+        >
+          {match[3]}
+        </a>
+      );
+    }
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+};
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/travel-chat`;
 
 const AIChatWidget = () => {
@@ -148,7 +185,7 @@ const AIChatWidget = () => {
                     {msg.role === "assistant" ? <Bot size={14} className="text-primary" /> : <User size={14} className="text-secondary-foreground" />}
                   </div>
                   <div className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] ${msg.role === "assistant" ? "glass text-foreground" : "bg-primary text-primary-foreground"}`}>
-                    {msg.content}
+                    {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
                   </div>
                 </motion.div>
               ))}
